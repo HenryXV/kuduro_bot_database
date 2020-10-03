@@ -75,10 +75,10 @@ class MusicPlayer():
 
             print(source.title, self._guild.name)
 
-            # opus = ctypes.util.find_library('opus')
-            # discord.opus.load_opus(opus)
-            # if not discord.opus.is_loaded():
-            #     raise RunTimeError('Opus failed to load')
+            opus = ctypes.util.find_library('opus')
+            discord.opus.load_opus(opus)
+            if not discord.opus.is_loaded():
+                raise RunTimeError('Opus failed to load')
 
             self._guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next_song.set))
             if source.title == 'chill':
