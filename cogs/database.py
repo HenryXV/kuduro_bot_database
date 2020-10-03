@@ -13,7 +13,7 @@ from sqlalchemy.sql.expression import HasPrefixes
 from sqlalchemy.orm import sessionmaker, relationship, backref
 
 
-engine = create_engine('postgresql+psycopg2://postgres:#Rique130303@localhost:5432/playlists', echo=True)
+engine = create_engine('postgresql+psycopg2://oytajjjmytxeqe:98e043a3ecd0e51737612d53f576aa6aa16080f253177a4d9ebb7c525a7cfb90@ec2-54-197-254-117.compute-1.amazonaws.com:5432/d5klk5lob226qh', echo=True)
 
 Base = declarative_base()
 
