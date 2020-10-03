@@ -46,7 +46,7 @@ class MusicPlayer():
             try:
                 if len(self.pq) == 0 and self.wait == True:
                     file = open('intro.webm')
-                    source = FFmpegPCMAudio(file, pipe=True)
+                    source = FFmpegPCMAudio(file)
                     source.title = 'chill'
                 elif len(self.pq) == 0:
                     if self.loop_queue == False:
