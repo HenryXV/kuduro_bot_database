@@ -8,6 +8,7 @@ import traceback
 import random
 import cogs.database as db
 from pqdict import nsmallest
+from sqlalchemy.dialects.postgresql import insert
 from cogs.music_player import MusicPlayer
 from ytdlsource import YTDLSource
 from async_timeout import timeout
@@ -71,7 +72,8 @@ class Music(commands.Cog):
         except KeyError:
             database = db.Database(ctx)
             self.databases[ctx.guild.id] = database
-            db.session.execute(db.Database.insert_pref(self, db.Guild.__table__), {'id': database._guild.id, 'name': database._guild.name})
+            stmt = insert(db.Guild).values(id=database._guild.id, name=database._guild.name).on_conflict_do_nothing()
+            db.session.execute(stmt)
             for track in db.session.query(db.Track).filter_by(guild_id=database._guild.id):
                 db.session.delete(track)
 
@@ -86,6 +88,7 @@ class Music(commands.Cog):
             await asyncio.sleep(3)
 
             if len(player.pq) == 0 and player.loop_queue == True:
+                await ctx.send('Looping...')
                 await self.loop_queue_(ctx)
             elif player.loop_queue == False: break
             else: continue
@@ -129,8 +132,9 @@ class Music(commands.Cog):
         player.value = player.value + 1
         player.pq.additem(source, player.value)
 
-        db.session.execute(db.Database.insert_pref(self, db.Track.__table__), {'index': player.value, 'web_url': source.web_url, 'title': source.title,
-        'duration': source.duration, 'guild_id': database._guild.id})
+        stmt = insert(db.Track).values(index=player.value, web_url=source.web_url, title=source.title, duration=source.duration, guild_id=database._guild.id).on_conflict_do_nothing()
+
+        db.session.execute(stmt)
 
         db.session.commit()
 
@@ -290,12 +294,14 @@ class Music(commands.Cog):
                 pass
 
             db.session.delete(to_delete)
+
+            db.session.commit()
+
             database.update_index(index)
 
             await ctx.send('The audio {} was removed from the queue'.format(title))
-
-            db.session.commit()
-        except AttributeError:
+        except AttributeError as e:
+            print(e)
             return await ctx.send('The audio is not on the queue', delete_after=10)
 
         await ctx.message.add_reaction('❌')
