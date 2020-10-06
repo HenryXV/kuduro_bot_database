@@ -42,7 +42,6 @@ class MusicPlayer():
 
         while not self.bot.is_closed():
             self.next_song.clear()
-            await self.check_members()
 
             try:
                 if len(self.pq) == 0 and self.wait == True:
@@ -84,6 +83,8 @@ class MusicPlayer():
                 self.np = await self._channel.send('Playing now: {a} - Requested by: <@{b}>'.format(a=source.title, b=source.requester.author.id))
 
             await self.next_song.wait()
+
+            await self.check_members()
 
             source.cleanup()
             self.current = None
