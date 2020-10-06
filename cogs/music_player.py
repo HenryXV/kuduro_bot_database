@@ -84,8 +84,6 @@ class MusicPlayer():
 
             await self.next_song.wait()
 
-            await self.check_members()
-
             source.cleanup()
             self.current = None
 
