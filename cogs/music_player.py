@@ -39,6 +39,7 @@ class MusicPlayer():
 
     async def player_loop(self):
         await self.bot.wait_until_ready()
+        await self.check_members()
 
         while not self.bot.is_closed():
             self.next_song.clear()
