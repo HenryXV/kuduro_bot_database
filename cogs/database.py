@@ -1,5 +1,7 @@
+import os
 import discord
 from discord.ext import commands
+from dotenv import load_dotenv
 
 import asyncio
 import json
@@ -14,7 +16,10 @@ from sqlalchemy.sql.expression import HasPrefixes
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import sessionmaker, relationship, backref
 
-engine = create_engine(DATABASE_URL, echo=False)
+load_dotenv()
+URL = os.getenv('DATABASE_URL')
+
+engine = create_engine(URL, echo=True)
 
 Base = declarative_base()
 
