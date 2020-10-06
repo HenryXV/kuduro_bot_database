@@ -48,15 +48,12 @@ class MusicPlayer():
                     source = FFmpegPCMAudio('intro.webm')
                     source.title = 'chill'
                 elif len(self.pq) == 0:
-                    if self.loop_queue == False:
-                        await self._channel.send('I will disconnect in 20 seconds if there is no audio on the queue', delete_after=20)
-                        await asyncio.sleep(15)
                     await asyncio.sleep(5)
                     source = self.pq.pop()
                 else:
                     source = self.pq.pop()
             except KeyError:
-                await self._channel.send('There is no audio on the queue, so I will disconnect from the channel. Use the command !play or !p to queue more audios', delete_after=15)
+                await self._channel.send('There is no audio on the queue, so I will disconnect from the channel. Use the command !play or !p to queue more audios', delete_after=10)
                 return self.destroy(self._guild)
 
             if not isinstance(source, YTDLSource) and not isinstance(source, FFmpegPCMAudio):
@@ -95,6 +92,17 @@ class MusicPlayer():
                 await self.np.delete()
             except discord.HTTPException:
                 pass
+
+    async def check_members(self):
+
+        channel = self.bot.voice_clients[0].channel
+        print(channel.members, channel.name)
+
+        if len(channel.members) == 1:
+            await self._channel.send('There is no one connected to the voice channel {}, so I will disconnect.'.format(self._channel), delete_after=10)
+            self.destroy(self._guild)
+        else:
+            pass
 
     def destroy(self, guild):
         return self.bot.loop.create_task(self._cog.cleanup(guild))
