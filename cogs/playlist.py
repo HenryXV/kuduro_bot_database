@@ -79,6 +79,9 @@ class Playlist(commands.Cog):
             def check(reaction, user):
                 return str(reaction.emoji) in emojis.values() and user == ctx.message.author
 
+            def check_raw(payload):
+                return str(payload.emoji) in emojis.values() and payload.user_id == ctx.message.author.id
+
             try:
                 reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
 
@@ -93,7 +96,7 @@ class Playlist(commands.Cog):
 
                     await message.edit(embed=embed)
 
-                    reaction, user = await self.bot.wait_for('reaction_remove', check=check)
+                    payload = await self.bot.wait_for('raw_reaction_remove', check=check_raw)
 
                     await message.delete()
 
