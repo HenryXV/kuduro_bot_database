@@ -125,7 +125,7 @@ class Database():
 
     def get_playlist_name(self, ctx, name):
 
-        return session.query(Playlist).filter(Playlist.name == name, Playlist.user_id == ctx.message.author.id).first()
+        return session.query(Playlist).filter(Playlist.name == name, Playlist.user_id == ctx.message.author.id).all()
 
     async def load_playlist(self, ctx, name):
 

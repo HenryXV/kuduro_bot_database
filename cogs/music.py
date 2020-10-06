@@ -209,7 +209,7 @@ class Music(commands.Cog):
 
         fmt = '\n'.join([f'{track[0]} - {track[1]}' for track in queue])
 
-        embed = discord.Embed(title='Your queue', description=fmt)
+        embed = discord.Embed(title='Your queue', description=fmt, color=9442302)
 
         await ctx.send(embed=embed)
 
