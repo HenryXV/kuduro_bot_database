@@ -23,6 +23,7 @@ PyNaCl = "*"
 youtube_dl = "*"
 sqlalchemy = "*"
 psycopg2 = "*"
+ksoftapi = "*"
 
 [requires]
 python_version = "3.8"

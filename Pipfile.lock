@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f13f75d62141ac4208c08b0b2f28cbb590027b058645193b65710d2036ba09b8"
+            "sha256": "0bd5e0bbb565e81aba80fd8293f8bbfafa5f8ccc39d035d0915fe6b4714ef2a5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -115,6 +115,15 @@
             ],
             "index": "pypi",
             "version": "==2.10"
+        },
+        "ksoftapi": {
+            "hashes": [
+                "sha256:02685ca3cefe879c084b6df9b65e847d579f60ab720d8a793b82209c45bbaf8f",
+                "sha256:d9d617747ba91b1f209cd90c1a3613475187fc668db177df5c9d69f5402fd37a",
+                "sha256:dc765903fd0260c19c537034f40ca580b2dd023e0695daa7b5ddf32f9ba408d5"
+            ],
+            "index": "pypi",
+            "version": "==0.2.4a0"
         },
         "multidict": {
             "hashes": [
