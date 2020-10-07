@@ -9,7 +9,7 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 # Below cogs represents our folder our cogs are in.
-initial_extensions = ['cogs.music', 'cogs.playlist']
+initial_extensions = ['cogs.music', 'cogs.playlist', 'cogs.lyrics']
 
 bot = commands.Bot(command_prefix='!')
 
