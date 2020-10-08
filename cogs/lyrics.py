@@ -16,6 +16,7 @@ class Lyrics(commands.Cog):
         load_dotenv()
         self.kclient = ksoftapi.Client(os.getenv('KSOFT_API'))
 
+    @commands.max_concurrency(1, per=commands.BucketType.guild, wait=True)
     @commands.command(name='lyrics', help='Search for the lyrics of the specified song')
     async def lyrics_(self, ctx, *, search: str):
 

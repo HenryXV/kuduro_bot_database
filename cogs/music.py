@@ -85,8 +85,9 @@ class Music(commands.Cog):
             await asyncio.sleep(3)
 
             if len(player.pq) == 0 and player.loop_queue == True:
-                await ctx.send('Looping...', delete_after=10)
+                loop = await ctx.send('Looping...')
                 await self.loop_queue_(ctx)
+                await loop.delete()
             elif player.loop_queue == False: break
             else: continue
 
@@ -357,12 +358,13 @@ class Music(commands.Cog):
                 if player.loop_queue == True:
                     player.loop_queue = False
                 player.pq.clear()
-                await ctx.send('Going back in time...', delete_after = 15)
+                mes = await ctx.send('Going back in time...')
                 for track in db.session.query(db.Track).filter(db.Track.index >= index, db.Track.guild_id == database._guild.id):
                     source = await YTDLSource.create_source(ctx, track.web_url, loop=self.bot.loop, download=True)
                     if source.title == title:
                         player.pq.additem(source, track.index)
                         await Music.skip_(self, ctx)
+                        await mes.delete()
                     else:
                         player.pq.additem(source, track.index)
                 player.loop_queue = True
