@@ -16,7 +16,7 @@ class Playlist(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='save_playlist', help='Saves your current queue with the specified name')
+    @commands.command(name='save_playlist', help='Saves your current queue with the specified name', aliases=['sp'])
     async def save_playlist_(self, ctx, *, name: str):
 
         playlist_count = db.Database.get_playlists(self, ctx)
@@ -45,7 +45,7 @@ class Playlist(commands.Cog):
             traceback.print_exc()
             return await ctx.send('There was an error when saving your playlist')
 
-    @commands.command(name='view_playlists', help='View all of your saved playlists')
+    @commands.command(name='view_playlists', help='View all of your saved playlists', aliases=['vp'])
     async def view_playlists_(self, ctx):
 
         while True:
@@ -113,7 +113,7 @@ class Playlist(commands.Cog):
 
                 break
 
-    @commands.command(name='delete_playlist', help='Deletes the playlist with the specified name')
+    @commands.command(name='delete_playlist', help='Deletes the playlist with the specified name', aliases=['dp'])
     async def delete_playlist_(self, ctx, *, name: str):
 
         playlist_name = db.Database.get_playlist_name(self, ctx, name)

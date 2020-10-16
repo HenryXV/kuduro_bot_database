@@ -8,7 +8,7 @@ import json
 import psycopg2
 import random
 import sqlalchemy as sa
-from ytdlsource import YTDLSource
+from cogs.ytdlsource import YTDLSource
 from sqlalchemy import Table, Text, Column, Integer, String, create_engine, Sequence, ForeignKey, and_, or_
 from sqlalchemy.dialects.postgresql import BIGINT, TEXT, INTEGER, INTERVAL
 from sqlalchemy.ext.declarative import declarative_base

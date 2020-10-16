@@ -24,6 +24,8 @@ youtube_dl = "*"
 sqlalchemy = "*"
 psycopg2 = "*"
 ksoftapi = "*"
+spotipy = "*"
+django = "==3.1.2"
 
 [requires]
 python_version = "3.8"

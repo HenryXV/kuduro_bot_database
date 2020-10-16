@@ -9,7 +9,7 @@ import ctypes
 import ctypes.util
 from discord import FFmpegPCMAudio
 from pqdict import pqdict
-from ytdlsource import YTDLSource
+from cogs.ytdlsource import YTDLSource
 from async_timeout import timeout
 from functools import partial
 from youtube_dl import YoutubeDL
@@ -47,7 +47,7 @@ class MusicPlayer():
                 if len(self.pq) == 0 and self.wait == True:
                     source = FFmpegPCMAudio('intro.webm')
                     source.title = 'chill'
-                    
+
                 elif len(self.pq) == 0:
                     await asyncio.sleep(5)
                     source = self.pq.pop()

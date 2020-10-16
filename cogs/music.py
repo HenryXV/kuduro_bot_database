@@ -10,7 +10,7 @@ import cogs.database as db
 from pqdict import nsmallest
 from sqlalchemy.dialects.postgresql import insert
 from cogs.music_player import MusicPlayer
-from ytdlsource import YTDLSource
+from cogs.ytdlsource import YTDLSource
 from async_timeout import timeout
 from functools import partial
 from youtube_dl import YoutubeDL
@@ -141,7 +141,7 @@ class Music(commands.Cog):
         player.wait = False
 
     @commands.max_concurrency(1, per=commands.BucketType.guild, wait=True)
-    @commands.command(name='next', help='Skips to the next song on the queue')
+    @commands.command(name='next', help='Skips to the next song on the queue', aliases=['n'])
     async def skip_(self, ctx):
 
         try:
@@ -413,7 +413,7 @@ class Music(commands.Cog):
         else:
             return await ctx.send('The queue is already looping')
 
-    @commands.command(name='loop_queue_stop', help='Stops the loop queue', aliases=['slq'])
+    @commands.command(name='loop_queue_stop', help='Stops the loop queue', aliases=['lqs'])
     async def stop_loop_queue_(self, ctx):
 
         try:
@@ -443,7 +443,7 @@ class Music(commands.Cog):
         player.wait = False
 
     @commands.max_concurrency(1, per=commands.BucketType.guild, wait=True)
-    @commands.command(name='load_playlist', help='Loads a playlist with the specified name')
+    @commands.command(name='load_playlist', help='Loads a playlist with the specified name', aliases=['lp'])
     async def load_playlist_(self, ctx, *, name: str):
 
         playlist_name = db.Database.get_playlist_name(self, ctx, name)
