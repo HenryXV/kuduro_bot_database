@@ -443,7 +443,7 @@ class Music(commands.Cog):
         player.wait = False
 
     @commands.max_concurrency(1, per=commands.BucketType.guild, wait=True)
-    @commands.command(name='load_playlist', help='Loads a playlist with the specified name', aliases=['lp'])
+    @commands.command(name='load_playlist', help='Loads a playlist with the specified name', aliases=['loadp'])
     async def load_playlist_(self, ctx, *, name: str):
 
         playlist_name = db.Database.get_playlist_name(self, ctx, name)
