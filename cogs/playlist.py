@@ -33,7 +33,7 @@ class Playlist(commands.Cog):
         playlist_name = db.Database.get_playlist_name(self, ctx, name)
 
         try:
-            if name == playlist_name[0].name:
+            if name.lower() == playlist_name[0].name.lower():
                 return await ctx.send('You already have a playlist with the name {}'.format(name))
         except IndexError:
             pass
@@ -116,15 +116,13 @@ class Playlist(commands.Cog):
     @commands.command(name='delete_playlist', help='Deletes the playlist with the specified name', aliases=['dp'])
     async def delete_playlist_(self, ctx, *, name: str):
 
-        playlist_name = db.Database.get_playlist_name(self, ctx, name)
-
-        if playlist_name != None:
-            db.Database.delete_playlist(self, ctx, name)
-
+        playlist = db.Database.get_playlist_name(self, ctx, name)
+        
+        try:
+            db.Database.delete_playlist(self, ctx, playlist[0].name)
             await ctx.message.add_reaction('❌')
-            return await ctx.send('Your playlist {} has been removed'.format(name))
-        else:
-            return await ctx.send('You do not have any playlist with that name')
+        except IndexError:
+            return await ctx.send('There is no playlist with the name: {}'.format(name))
 
 def setup(bot):
     bot.add_cog(Playlist(bot))

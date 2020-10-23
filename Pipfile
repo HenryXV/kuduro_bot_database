@@ -25,7 +25,11 @@ sqlalchemy = "*"
 psycopg2 = "*"
 ksoftapi = "*"
 spotipy = "*"
-django = "==3.1.2"
+pytest = "*"
+hypothesis = "*"
+pytest-asyncio = "*"
+dpytest = "*"
+datetime = "*"
 
 [requires]
 python_version = "3.8"

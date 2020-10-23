@@ -47,7 +47,6 @@ class MusicPlayer():
                 if len(self.pq) == 0 and self.wait == True:
                     source = FFmpegPCMAudio('intro.webm')
                     source.title = 'chill'
-
                 elif len(self.pq) == 0:
                     await asyncio.sleep(5)
                     source = self.pq.pop()

@@ -12,6 +12,8 @@ from youtube_dl import YoutubeDL
 
 ytdl_opts = {
     'format': 'bestaudio/best',
+    'extractaudio': True,
+    'audioformat': 'mp3',
     'outtmpl': 'downloads/%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
     'noplaylist': True,
@@ -20,6 +22,7 @@ ytdl_opts = {
     'logtostderr': False,
     'quiet': True,
     'no_warnings': True,
+    'verbose': True,
     'default_search': 'auto',
     'source_address': '0.0.0.0'  # ipv6 addresses cause issues sometimes
 }
@@ -53,7 +56,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
     @classmethod
     async def create_source(cls, ctx, search: str, *, loop, download=False):
         loop = loop or asyncio.get_event_loop()
-
+                
         to_run = partial(ytdl.extract_info, url=search, download=download)
         data = await loop.run_in_executor(None, to_run)
 

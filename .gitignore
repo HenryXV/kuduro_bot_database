@@ -125,6 +125,7 @@ dmypy.json
 .pyre/
 
 # Custom files
-ffmpeg.exe
+ffmpeg
 downloads/
 bot_site
+vscode_settings/

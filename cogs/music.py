@@ -6,10 +6,15 @@ import itertools
 import sys
 import traceback
 import random
+import datetime
+import urllib.request
+import re
+import youtube_dl
 import cogs.database as db
 from pqdict import nsmallest
 from sqlalchemy.dialects.postgresql import insert
 from cogs.music_player import MusicPlayer
+from cogs.spotify import Spotify
 from cogs.ytdlsource import YTDLSource
 from async_timeout import timeout
 from functools import partial
@@ -49,9 +54,6 @@ class Music(commands.Cog):
                 return await ctx.send('This command can not be used in Private Messages.')
             except discord.HTTPException:
                 pass
-        elif isinstance(error, InvalidVoiceChannel):
-            await ctx.send('Error connecting to Voice Channel. '
-                           'Please make sure you are in a valid channel or provide me with one')
 
         print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
@@ -85,9 +87,7 @@ class Music(commands.Cog):
             await asyncio.sleep(3)
 
             if len(player.pq) == 0 and player.loop_queue == True:
-                loop = await ctx.send('Looping...')
                 await self.loop_queue_(ctx)
-                await loop.delete()
             elif player.loop_queue == False: break
             else: continue
 
@@ -110,30 +110,59 @@ class Music(commands.Cog):
     @commands.command(name='play', help='Connects to your channel and play an audio from youtube [search or url]', aliases=['p'])
     async def play_(self, ctx, *, search: str):
 
-        await ctx.trigger_typing()
-
         await Music.join(self, ctx)
+        
+        async with ctx.typing():
 
-        player = self.get_player(ctx)
-        player.wait = True
+            player = self.get_player(ctx)
+            player.wait = True
 
-        database = self.get_database(ctx)
+            database = self.get_database(ctx)
+            
+            # Uses urrllib.request to search videos from the query term provided
+            # then creates an url for the video       
+            search = '+'.join(search.split())
+            
+            html = urllib.request.urlopen(f"https://www.youtube.com/results?search_query={search}")
+            video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
+            try:
+                url = f"https://www.youtube.com/watch?v={video_ids[0]}"
+            except IndexError:
+                if len(player.pq) == 0:
+                    await Music.stop_(self, ctx)
+                
+                embed = discord.Embed(title='An error occurred while searching you video',
+                                      description=f'It was not possible to find a video with the name: {search}',
+                                      color=9442302)
+                
+                return await ctx.send(embed=embed)
+            # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
+            try:
+                source = await YTDLSource.create_source(ctx, url, loop=self.bot.loop, download=True)
+            except youtube_dl.utils.DownloadError as e:
+                if len(player.pq) == 0:
+                    await Music.stop_(self, ctx)
+                
+                e = e.split(';')
+                
+                embed = discord.Embed(title=f"An error occurred while downloading: {url}",
+                                      description=str(e[0]),
+                                      color=9442302)
 
-        # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
-        source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=True)
+                return await ctx.send(embed=embed)
 
-        track = db.Database.search(self, ctx, source.title)
-        if track != None:
-            return await ctx.send('The audio {} is already on the queue'.format(source.title))
+            track = db.Database.search(self, ctx, source.title)
+            if track != None:
+                return await ctx.send('The audio {} is already on the queue'.format(source.title))
 
-        player.value = player.value + 1
-        player.pq.additem(source, player.value)
+            player.value = player.value + 1
+            player.pq.additem(source, player.value)
 
-        stmt = insert(db.Track).values(index=player.value, web_url=source.web_url, title=source.title, duration=source.duration, guild_id=database._guild.id).on_conflict_do_nothing()
+            stmt = insert(db.Track).values(index=player.value, web_url=source.web_url, title=source.title, duration=source.duration, guild_id=database._guild.id).on_conflict_do_nothing()
 
-        db.session.execute(stmt)
+            db.session.execute(stmt)
 
-        db.session.commit()
+            db.session.commit()
 
         await ctx.message.add_reaction('✅')
         await ctx.send(f'```ini\n[Added {source.title} to the Queue]\n```', delete_after=30)
@@ -446,15 +475,36 @@ class Music(commands.Cog):
     @commands.command(name='load_playlist', help='Loads a playlist with the specified name', aliases=['loadp'])
     async def load_playlist_(self, ctx, *, name: str):
 
-        playlist_name = db.Database.get_playlist_name(self, ctx, name)
+        playlist = db.Database.get_playlist_name(self, ctx, name)
 
         await ctx.trigger_typing()
-
-        if playlist_name != None:
-            await db.Database.load_playlist(self, ctx, name)
+        
+        try:
+            await db.Database.load_playlist(self, ctx, playlist[0].name)
             return await ctx.send('Any changes made to the queue will not affect your saved playlist', delete_after=30)
-        else:
+        except IndexError:
             return await ctx.send('There is no playlist with the name: {}'.format(name))
-
+    
+    @commands.command(name='spotify')
+    async def search_spotify_tracks_(self, ctx, *, search: str):
+        
+        sp = Spotify()
+        
+        search_result = sp.search_tracks(search, limit = 5)
+                
+        embed = discord.Embed(title=f'Results for the term: {search}', color=9442302)
+        
+        embed.set_author(name='Spotify Track Search')
+        
+        for i, t in enumerate(search_result):
+            
+            time = str(datetime.timedelta(milliseconds = t['duration']))
+            
+            embed.add_field(name=f"{i+1} - {t['track_n']}",
+                            value=f"Artist(s): {t['artists_n']} \n Duration: {time[2:7]} minutes",
+                            inline=True)
+        
+        await ctx.send(embed = embed)
+        
 def setup(bot):
     bot.add_cog(Music(bot))

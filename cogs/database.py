@@ -19,7 +19,7 @@ from sqlalchemy.orm import sessionmaker, relationship, backref
 load_dotenv()
 URL = os.getenv('DATABASE_URL')
 
-engine = create_engine(URL, echo=True)
+engine = create_engine(URL, echo=False)
 
 Base = declarative_base()
 
@@ -129,7 +129,7 @@ class Database():
 
     def get_playlist_name(self, ctx, name):
 
-        return session.query(Playlist).filter(Playlist.name == name, Playlist.user_id == ctx.message.author.id).all()
+        return session.query(Playlist).filter(Playlist.name.ilike(name), Playlist.user_id == ctx.message.author.id).all()
 
     async def load_playlist(self, ctx, name):
 
@@ -143,7 +143,7 @@ class Database():
 
         player.wait = True
 
-        for track in session.query(Playlist).filter(Playlist.name == name, Playlist.user_id == database._user.id):
+        for track in session.query(Playlist).filter(Playlist.name.ilike(name), Playlist.user_id == database._user.id):
             source = await YTDLSource.create_source(ctx, track.web_url, loop=self.bot.loop, download=True)
 
             player.value = player.value + 1
