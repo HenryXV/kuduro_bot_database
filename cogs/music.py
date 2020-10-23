@@ -143,7 +143,7 @@ class Music(commands.Cog):
                 if len(player.pq) == 0:
                     await Music.stop_(self, ctx)
                 
-                e = e.split(';')
+                e = str(e).split(';')
                 
                 embed = discord.Embed(title=f"An error occurred while downloading: {url}",
                                       description=str(e[0]),
