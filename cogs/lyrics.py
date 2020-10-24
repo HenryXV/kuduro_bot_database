@@ -2,8 +2,6 @@ import os
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-
-import asyncio
 import ksoftapi
 
 class Lyrics(commands.Cog):

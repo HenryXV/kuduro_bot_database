@@ -1,18 +1,11 @@
 import discord
-from discord.ext import commands
 
 import asyncio
-import itertools
-import sys
-import traceback
 import ctypes
 import ctypes.util
 from discord import FFmpegPCMAudio
 from pqdict import pqdict
 from cogs.ytdlsource import YTDLSource
-from async_timeout import timeout
-from functools import partial
-from youtube_dl import YoutubeDL
 
 class MusicPlayer():
 

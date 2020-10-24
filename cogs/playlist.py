@@ -6,8 +6,6 @@ import datetime
 import traceback
 import datetime
 import cogs.database as db
-from cogs.music import Music
-from cogs.music_player import MusicPlayer
 
 class Playlist(commands.Cog):
 

@@ -2,23 +2,17 @@ import discord
 from discord.ext import commands
 
 import asyncio
-import itertools
 import sys
 import traceback
-import random
 import datetime
 import urllib.request
 import re
 import youtube_dl
 import cogs.database as db
-from pqdict import nsmallest
 from sqlalchemy.dialects.postgresql import insert
 from cogs.music_player import MusicPlayer
 from cogs.spotify import Spotify
 from cogs.ytdlsource import YTDLSource
-from async_timeout import timeout
-from functools import partial
-from youtube_dl import YoutubeDL
 
 class Music(commands.Cog):
 
