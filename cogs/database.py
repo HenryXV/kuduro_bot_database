@@ -1,20 +1,12 @@
 import os
-import discord
-from discord.ext import commands
 from dotenv import load_dotenv
-
-import asyncio
-import json
-import psycopg2
 import random
-import sqlalchemy as sa
 from cogs.ytdlsource import YTDLSource
-from sqlalchemy import Table, Text, Column, Integer, String, create_engine, Sequence, ForeignKey, and_, or_
-from sqlalchemy.dialects.postgresql import BIGINT, TEXT, INTEGER, INTERVAL
+from sqlalchemy import Column, Integer, String, create_engine, Sequence, ForeignKey, and_
+from sqlalchemy.dialects.postgresql import BIGINT, TEXT, INTEGER
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql.expression import HasPrefixes
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import sessionmaker, relationship, backref
+from sqlalchemy.orm import sessionmaker, relationship
 
 load_dotenv()
 URL = os.getenv('DATABASE_URL')
