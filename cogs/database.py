@@ -80,7 +80,8 @@ class Database():
 
         session.execute(insert(User).values(id=self._user.id, name=self._user.name).on_conflict_do_nothing())
 
-    def search(self, ctx, to_search):
+    @staticmethod
+    def search(ctx, to_search):
 
         try:
             int(to_search)
@@ -92,7 +93,8 @@ class Database():
         session.query(Track).filter(and_(Track.index > i, Track.guild_id == self._guild.id)).update({Track.index: Track.index - 1}, synchronize_session=False)
         session.commit()
 
-    def clean_database(self, ctx):
+    @staticmethod
+    def clean_database(ctx):
         session.query(Track).filter(Track.guild_id == ctx.guild.id).delete(synchronize_session=False)
 
         session.commit()
@@ -116,18 +118,21 @@ class Database():
 
         print([(k.title,v) for k,v in player.pq.items()])
 
-    def save_playlist(self, ctx, name):
+    @staticmethod
+    def save_playlist(ctx, name):
 
         for track in session.query(Track).filter(Track.guild_id == ctx.guild.id):
             session.execute(insert(Playlist).values(name=name, index=track.index, web_url=track.web_url, title=track.title, duration=track.duration, user_id=ctx.message.author.id))
 
         session.commit()
 
-    def get_playlists(self, ctx):
+    @staticmethod
+    def get_playlists(ctx):
 
         return [playlist for playlist in session.query(Playlist).filter(Playlist.user_id == ctx.message.author.id)]
 
-    def get_playlist_name(self, ctx, name):
+    @staticmethod
+    def get_playlist_name(ctx, name):
 
         return session.query(Playlist).filter(Playlist.name.ilike(name), Playlist.user_id == ctx.message.author.id).all()
 
@@ -157,7 +162,8 @@ class Database():
 
         session.commit()
 
-    def delete_playlist(self, ctx, name):
+    @staticmethod
+    def delete_playlist(ctx, name):
 
         session.query(Playlist).filter(Playlist.name == name, Playlist.user_id == ctx.message.author.id).delete(synchronize_session = False)
 
