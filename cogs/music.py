@@ -232,7 +232,7 @@ class Music(commands.Cog):
         player = self.get_player(ctx)
         database = self.get_database(ctx)
 
-        queue = [(index, title) for index, title in db.session.query(db.Track.index, db.Track.title).filter(db.Track.guild_id==database._guild.id).order_by(db.Track.index)]
+        queue = list(db.session.query(db.Track.index, db.Track.title).filter(db.Track.guild_id==database._guild.id).order_by(db.Track.index))
 
         if len(queue) == 0:
             return await ctx.send('There is no audio on the queue. Use the command !play or !p to queue audios', delete_after=20)

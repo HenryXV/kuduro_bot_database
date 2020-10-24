@@ -125,7 +125,7 @@ class Database():
 
     def get_playlists(self, ctx):
 
-        return [playlist for playlist in session.query(Playlist).filter(Playlist.user_id == ctx.message.author.id)]
+        return list(session.query(Playlist).filter(Playlist.user_id == ctx.message.author.id))
 
     def get_playlist_name(self, ctx, name):
 
