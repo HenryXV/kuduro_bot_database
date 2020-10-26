@@ -8,7 +8,7 @@ It also has a queue that you can add more and more audios!
 
 # Commands
 
-Visit my [website](http://kudurosite.herokuapp.com) for a full list on the commands available
+Visit my [website](https://www.kuduro.wtf) for a full list on the commands available
 
 # Feedback
 
