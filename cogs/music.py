@@ -115,7 +115,7 @@ class Music(commands.Cog):
     async def play_(self, ctx, *, search: str):
 
         await Music.join(self, ctx)
-        
+
         async with ctx.typing():
 
             player = self.get_player(ctx)

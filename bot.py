@@ -11,6 +11,7 @@ initial_extensions = ['cogs.music', 'cogs.playlist', 'cogs.lyrics']
 
 bot = commands.Bot(command_prefix='!')
 
+
 @bot.event
 async def on_ready():
     print('Logged in as')

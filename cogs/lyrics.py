@@ -4,6 +4,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import ksoftapi
 
+
 class Lyrics(commands.Cog):
 
     __slots__ = ['bot', 'kclient']
@@ -21,14 +22,15 @@ class Lyrics(commands.Cog):
         try:
             results = await self.kclient.music.lyrics(search, limit=1)
             first = results[0]
-            embed = discord.Embed(title = first.name, description = first.lyrics, color = 9442302 )
-            embed.set_author(name = first.artist)
-            embed.add_field(name = 'Album title', value = first.album.split(',')[0])
-            embed.add_field(name = 'Album year', value = first.album_year[0])
+            embed = discord.Embed(title=first.name, description=first.lyrics, color=9442302)
+            embed.set_author(name=first.artist)
+            embed.add_field(name='Album title', value=first.album.split(',')[0])
+            embed.add_field(name='Album year', value=first.album_year[0])
 
             await ctx.send(embed=embed)
         except ksoftapi.NoResults:
             await ctx.send('No lyrics found for {}'.format(search))
+
 
 def setup(bot):
     bot.add_cog(Lyrics(bot))

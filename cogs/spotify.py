@@ -4,18 +4,19 @@ from spotipy.oauth2 import SpotifyClientCredentials
 
 from dotenv import load_dotenv
 
-class Spotify():
+
+class Spotify:
     
     def __init__(self):
         load_dotenv()
         self.client_credential = SpotifyClientCredentials(client_id=os.getenv('SPOTIFY_ID'),
                                                           client_secret=os.getenv('SPOTIFY_SECRET'))
-        self.sp = spotipy.Spotify(client_credentials_manager = self.client_credential)
+        self.sp = spotipy.Spotify(client_credentials_manager=self.client_credential)
         
     def search_tracks(self, search, limit):
-        results = self.sp.search(q = search,
-                                 type = 'track', 
-                                 limit = limit)
+        results = self.sp.search(q=search,
+                                 type='track',
+                                 limit=limit)
         tracks = []
         
         for track in results['tracks']['items']:

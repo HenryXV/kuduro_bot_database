@@ -15,17 +15,20 @@ engine = create_engine(URL, echo=False)
 
 Base = declarative_base()
 
+
 class Guild(Base):
     __tablename__ = 'guilds'
 
     id = Column(BIGINT, primary_key=True, unique=True)
     name = Column(TEXT)
 
+
 class User(Base):
     __tablename__ = 'users'
 
     id = Column(BIGINT, primary_key=True, unique=True)
     name = Column(TEXT)
+
 
 class Track(Base):
     __tablename__ = 'tracks'
@@ -37,7 +40,8 @@ class Track(Base):
     duration = Column(INTEGER)
     guild_id = Column(BIGINT, ForeignKey('guilds.id'))
 
-    guild = relationship('Guild', back_populates = 'tracks')
+    guild = relationship('Guild', back_populates='tracks')
+
 
 class Playlist(Base):
     __tablename__ = 'playlists'
@@ -50,17 +54,21 @@ class Playlist(Base):
     duration = Column(INTEGER)
     user_id = Column(BIGINT, ForeignKey('users.id'))
 
-    user = relationship('User', back_populates = 'playlists')
+    user = relationship('User', back_populates='playlists')
 
-Guild.tracks = relationship('Track', order_by = Track.id, back_populates = 'guild', cascade="all, delete, delete-orphan")
-User.playlists = relationship('Playlist', order_by = Playlist.id, back_populates = 'user', cascade="all, delete, delete-orphan")
+
+Guild.tracks = relationship('Track', order_by=Track.id, back_populates='guild',
+                            cascade="all, delete, delete-orphan")
+User.playlists = relationship('Playlist', order_by=Playlist.id, back_populates='user',
+                              cascade="all, delete, delete-orphan")
 
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 session = Session()
 
-class Database():
+
+class Database:
 
     __slots__ = ('bot', 'guild', 'user', '_cog')
 
@@ -70,19 +78,23 @@ class Database():
         self.user = ctx.message.author
         self._cog = ctx.cog
 
-        session.execute(insert(User).values(id=self.user.id, name=self.user.name).on_conflict_do_nothing())
+        session.execute(insert(User).values(id=self.user.id, name=self.user.name
+                                            ).on_conflict_do_nothing())
 
     @staticmethod
     def search(ctx, to_search):
 
         try:
             int(to_search)
-            return session.query(Track).filter(Track.index == to_search).filter(Track.guild_id == ctx.guild.id).first()
+            return session.query(Track).filter(Track.index == to_search
+                                               ).filter(Track.guild_id == ctx.guild.id).first()
         except ValueError:
-            return session.query(Track).filter(Track.title.ilike('%{}%'.format(to_search))).filter(Track.guild_id == ctx.guild.id).first()
+            return session.query(Track).filter(Track.title.ilike('%{}%'.format(to_search))
+                                               ).filter(Track.guild_id == ctx.guild.id).first()
 
     def update_index(self, i):
-        session.query(Track).filter(and_(Track.index > i, Track.guild_id == self.guild.id)).update({Track.index: Track.index - 1}, synchronize_session=False)
+        session.query(Track).filter(and_(Track.index > i, Track.guild_id == self.guild.id)
+                                    ).update({Track.index: Track.index - 1}, synchronize_session=False)
         session.commit()
 
     @staticmethod
@@ -106,15 +118,21 @@ class Database():
         player = self._cog.get_player(ctx)
 
         for track in session.query(Track).filter(Track.guild_id == self.guild.id):
-            [player.pq.updateitem(k, int(track.index)) for k,v in player.pq.items() if k.title == track.title]
+            [player.pq.updateitem(k, int(track.index)) for k, v in player.pq.items()
+             if k.title == track.title]
 
-        print([(k.title,v) for k,v in player.pq.items()])
+        print([(k.title, v) for k, v in player.pq.items()])
 
     @staticmethod
     def save_playlist(ctx, name):
 
         for track in session.query(Track).filter(Track.guild_id == ctx.guild.id):
-            session.execute(insert(Playlist).values(name=name, index=track.index, web_url=track.web_url, title=track.title, duration=track.duration, user_id=ctx.message.author.id))
+            session.execute(insert(Playlist).values(name=name,
+                                                    index=track.index,
+                                                    web_url=track.web_url,
+                                                    title=track.title,
+                                                    duration=track.duration,
+                                                    user_id=ctx.message.author.id))
 
         session.commit()
 
@@ -126,7 +144,8 @@ class Database():
     @staticmethod
     def get_playlist_name(ctx, name):
 
-        return session.query(Playlist).filter(Playlist.name.ilike(name), Playlist.user_id == ctx.message.author.id).all()
+        return session.query(Playlist).filter(Playlist.name.ilike(name),
+                                              Playlist.user_id == ctx.message.author.id).all()
 
     async def load_playlist(self, ctx, name):
 
@@ -136,17 +155,23 @@ class Database():
         database = self.get_database(ctx)
 
         player.pq.clear()
-        Database.clean_database(self, ctx)
+        Database.clean_database(ctx)
 
         player.wait = True
 
-        for track in session.query(Playlist).filter(Playlist.name.ilike(name), Playlist.user_id == database.user.id):
-            source = await YTDLSource.create_source(ctx, track.web_url, loop=self.bot.loop, download=True)
+        for track in session.query(Playlist).filter(Playlist.name.ilike(name),
+                                                    Playlist.user_id == database.user.id):
+            source = await YTDLSource.create_source(ctx, track.web_url,
+                                                    loop=self.bot.loop, download=True)
 
             player.value = player.value + 1
             player.pq.additem(source, track.index)
 
-            session.execute(insert(Track).values(index=track.index, web_url=source.web_url, title=source.title, duration=source.duration, guild_id=ctx.guild.id).on_conflict_do_nothing())
+            session.execute(insert(Track).values(index=track.index,
+                                                 web_url=source.web_url,
+                                                 title=source.title,
+                                                 duration=source.duration,
+                                                 guild_id=ctx.guild.id).on_conflict_do_nothing())
 
         player.wait = False
 
@@ -157,6 +182,8 @@ class Database():
     @staticmethod
     def delete_playlist(ctx, name):
 
-        session.query(Playlist).filter(Playlist.name == name, Playlist.user_id == ctx.message.author.id).delete(synchronize_session = False)
+        session.query(Playlist).filter(Playlist.name == name,
+                                       Playlist.user_id == ctx.message.author.id
+                                       ).delete(synchronize_session=False)
 
         session.commit()
