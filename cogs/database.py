@@ -62,15 +62,15 @@ session = Session()
 
 class Database():
 
-    __slots__ = ('bot', '_guild', '_user', '_cog')
+    __slots__ = ('bot', 'guild', 'user', '_cog')
 
     def __init__(self, ctx):
         self.bot = ctx.bot
-        self._guild = ctx.guild
-        self._user = ctx.message.author
+        self.guild = ctx.guild
+        self.user = ctx.message.author
         self._cog = ctx.cog
 
-        session.execute(insert(User).values(id=self._user.id, name=self._user.name).on_conflict_do_nothing())
+        session.execute(insert(User).values(id=self.user.id, name=self.user.name).on_conflict_do_nothing())
 
     @staticmethod
     def search(ctx, to_search):
@@ -82,7 +82,7 @@ class Database():
             return session.query(Track).filter(Track.title.ilike('%{}%'.format(to_search))).filter(Track.guild_id == ctx.guild.id).first()
 
     def update_index(self, i):
-        session.query(Track).filter(and_(Track.index > i, Track.guild_id == self._guild.id)).update({Track.index: Track.index - 1}, synchronize_session=False)
+        session.query(Track).filter(and_(Track.index > i, Track.guild_id == self.guild.id)).update({Track.index: Track.index - 1}, synchronize_session=False)
         session.commit()
 
     @staticmethod
@@ -92,9 +92,9 @@ class Database():
         session.commit()
 
     def shuffle(self, ctx):
-        indexes = [track.index for track in session.query(Track).filter(Track.guild_id == self._guild.id)]
+        indexes = [track.index for track in session.query(Track).filter(Track.guild_id == self.guild.id)]
         new_values = random.sample(indexes, k=len(indexes))
-        for track in session.query(Track).filter(Track.guild_id == self._guild.id):
+        for track in session.query(Track).filter(Track.guild_id == self.guild.id):
             track.index = new_values.pop()
 
         session.commit()
@@ -105,7 +105,7 @@ class Database():
 
         player = self._cog.get_player(ctx)
 
-        for track in session.query(Track).filter(Track.guild_id == self._guild.id):
+        for track in session.query(Track).filter(Track.guild_id == self.guild.id):
             [player.pq.updateitem(k, int(track.index)) for k,v in player.pq.items() if k.title == track.title]
 
         print([(k.title,v) for k,v in player.pq.items()])
@@ -140,7 +140,7 @@ class Database():
 
         player.wait = True
 
-        for track in session.query(Playlist).filter(Playlist.name.ilike(name), Playlist.user_id == database._user.id):
+        for track in session.query(Playlist).filter(Playlist.name.ilike(name), Playlist.user_id == database.user.id):
             source = await YTDLSource.create_source(ctx, track.web_url, loop=self.bot.loop, download=True)
 
             player.value = player.value + 1

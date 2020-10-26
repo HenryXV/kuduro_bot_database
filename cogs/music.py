@@ -14,6 +14,7 @@ from cogs.music_player import MusicPlayer
 from cogs.spotify import Spotify
 from cogs.ytdlsource import YTDLSource
 
+
 class Music(commands.Cog):
 
     __slots__ = ('bot', 'players', 'databases')
@@ -35,13 +36,15 @@ class Music(commands.Cog):
         except KeyError:
             pass
 
-    async def __local_check(self, ctx):
+    @staticmethod
+    async def __local_check(ctx):
         # A local check which applies to all commands in this cog.
         if not ctx.guild:
             raise commands.NoPrivateMessage
         return True
 
-    async def __error(self, ctx, error):
+    @staticmethod
+    async def __error(ctx, error):
         # A local error handler for all errors arising from commands in this cog.
         if isinstance(error, commands.NoPrivateMessage):
             try:
@@ -53,7 +56,7 @@ class Music(commands.Cog):
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
     def get_player(self, ctx):
-    # Retrieve the guild player, or generate one.
+        # Retrieve the guild player, or generate one.
         try:
             player = self.players[ctx.guild.id]
         except KeyError:
@@ -67,7 +70,7 @@ class Music(commands.Cog):
         except KeyError:
             database = db.Database(ctx)
             self.databases[ctx.guild.id] = database
-            db.session.execute(insert(db.Guild).values(id=database._guild.id, name=database._guild.name).on_conflict_do_nothing())
+            db.session.execute(insert(db.Guild).values(id=database.guild.id, name=database.guild.name).on_conflict_do_nothing())
             database.clean_database(ctx)
 
         return database
@@ -82,23 +85,30 @@ class Music(commands.Cog):
 
             if len(player.pq) == 0 and player.loop_queue is True:
                 await self.loop_queue_(ctx)
-            elif player.loop_queue is False: break
-            else: continue
+            elif player.loop_queue is False:
+                break
+            else:
+                continue
+
+    @staticmethod
+    @commands.check
+    async def is_connect_to_voice_channel(ctx):
+        return ctx.message.author.voice.channel is not None
 
     @commands.command(name='join', help='Connects the bot to your current channel')
     async def join(self, ctx):
 
         try:
             channel = ctx.message.author.voice.channel
-        except:
-            await ctx.send('You are not connected to any voice channel', delete_after=10)
+        except AttributeError:
+            return await ctx.send('You are not connected to any voice channel', delete_after=10)
 
         voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
 
         if voice and voice.is_connected():
             await voice.move_to(channel)
         else:
-            voice = await channel.connect()
+            await channel.connect()
 
     @commands.max_concurrency(1, per=commands.BucketType.guild, wait=True)
     @commands.command(name='play', help='Connects to your channel and play an audio from youtube [search or url]', aliases=['p'])
@@ -145,14 +155,14 @@ class Music(commands.Cog):
 
                 return await ctx.send(embed=embed)
 
-            track = db.Database.search(self, ctx, source.title)
-            if track != None:
+            track = db.Database.search(ctx, source.title)
+            if track is not None:
                 return await ctx.send('The audio {} is already on the queue'.format(source.title))
 
             player.value = player.value + 1
             player.pq.additem(source, player.value)
 
-            stmt = insert(db.Track).values(index=player.value, web_url=source.web_url, title=source.title, duration=source.duration, guild_id=database._guild.id).on_conflict_do_nothing()
+            stmt = insert(db.Track).values(index=player.value, web_url=source.web_url, title=source.title, duration=source.duration, guild_id=database.guild.id).on_conflict_do_nothing()
 
             db.session.execute(stmt)
 
@@ -167,27 +177,17 @@ class Music(commands.Cog):
     @commands.command(name='next', help='Skips to the next song on the queue', aliases=['n'])
     async def skip_(self, ctx):
 
-        try:
-            channel = ctx.message.author.voice.channel
-        except:
-            return await ctx.send('You are not connected to any voice channel', delete_after=10)
-
         player = self.get_player(ctx)
 
         voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
-        # if voice.is_playing() and len(player.pq) > 0:
-        voice.stop()
-        await ctx.message.add_reaction('⏭️')
-        # else:
-        #     await ctx.send('There is no audio on the queue', delete_after=10)
+        if voice.is_playing() and len(player.pq) > 0 and player.loop_queue is False:
+            voice.stop()
+            await ctx.message.add_reaction('⏭️')
+        else:
+            await ctx.send('There is no audio on the queue', delete_after=10)
 
     @commands.command(name='pause', help='Pauses the audio currently being played')
     async def pause(self, ctx):
-
-        try:
-            channel = ctx.message.author.voice.channel
-        except:
-            return await ctx.send('You are not connected to any voice channel', delete_after=10)
 
         voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
         if voice.is_playing():
@@ -201,11 +201,6 @@ class Music(commands.Cog):
     @commands.command(name='resume', help='Resumes the audio currently playing')
     async def resume(self, ctx):
 
-        try:
-            channel = ctx.message.author.voice.channel
-        except:
-            return await ctx.send('You are not connected to any voice channel', delete_after=10)
-
         voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
         if voice.is_paused():
             voice.resume()
@@ -218,15 +213,9 @@ class Music(commands.Cog):
     @commands.command(name='queue', help='Show the audios currently queued', aliases=['q', 'playlist'])
     async def queue_info_(self, ctx):
 
-        try:
-            channel = ctx.message.author.voice.channel
-        except:
-            return await ctx.send('You are not connected to any voice channel', delete_after=10)
-
-        player = self.get_player(ctx)
         database = self.get_database(ctx)
 
-        queue = list(db.session.query(db.Track.index, db.Track.title).filter(db.Track.guild_id==database._guild.id).order_by(db.Track.index))
+        queue = list(db.session.query(db.Track.index, db.Track.title).filter(db.Track.guild_id == database.guild.id).order_by(db.Track.index))
 
         if len(queue) == 0:
             return await ctx.send('There is no audio on the queue. Use the command !play or !p to queue audios', delete_after=20)
@@ -239,11 +228,6 @@ class Music(commands.Cog):
 
     @commands.command(name='playing_now', help='Shows the current audio playing', aliases=['pn', 'now', 'currentaudio', 'playing'])
     async def now_playing_(self, ctx):
-
-        try:
-            channel = ctx.message.author.voice.channel
-        except:
-            return await ctx.send('You are not connected to any voice channel', delete_after=10)
 
         voice_channel = ctx.voice_client
 
@@ -261,11 +245,6 @@ class Music(commands.Cog):
 
     @commands.command(name='volume', help='Changes the volume between 1 and 100', aliases=['vol'])
     async def change_volume_(self, ctx, *, vol: float):
-
-        try:
-            channel = ctx.message.author.voice.channel
-        except:
-            return await ctx.send('You are not connected to any voice channel', delete_after=10)
 
         voice_channel = ctx.voice_client
 
@@ -294,11 +273,6 @@ class Music(commands.Cog):
     @commands.command(name='remove', help='[track position] Deletes the audio specified by the user', aliases=['re'])
     async def remove_(self, ctx, *, delete):
 
-        try:
-            channel = ctx.message.author.voice.channel
-        except:
-            return await ctx.send('You are not connected to any voice channel', delete_after=10)
-
         player = self.get_player(ctx)
         database = self.get_database(ctx)
 
@@ -308,7 +282,7 @@ class Music(commands.Cog):
             index = to_delete.index
 
             try:
-                title_to_del = [k for k,v in player.pq.items() if k.title == title]
+                title_to_del = [k for k, v in player.pq.items() if k.title == title]
                 del player.pq[title_to_del[0]]
             except IndexError:
                 pass
@@ -341,11 +315,6 @@ class Music(commands.Cog):
     @commands.command(name='clear', help='Deletes all audios from the queue')
     async def clear_(self, ctx):
 
-        try:
-            channel = ctx.message.author.voice.channel
-        except:
-            return await ctx.send('You are not connected to any voice channel', delete_after=10)
-
         player = self.get_player(ctx)
         database = self.get_database(ctx)
 
@@ -360,11 +329,6 @@ class Music(commands.Cog):
     @commands.command(name='jump', help='[track position] Skips to the specified audio', aliases=['j'])
     async def jump_(self, ctx, *, jump):
 
-        try:
-            channel = ctx.message.author.voice.channel
-        except:
-            return await ctx.send('You are not connected to any voice channel', delete_after=10)
-
         player = self.get_player(ctx)
         database = self.get_database(ctx)
 
@@ -375,14 +339,14 @@ class Music(commands.Cog):
 
             print(title, index)
 
-            audio = [k for k,v in player.pq.items() if k.title == title]
+            audio = [k for k, v in player.pq.items() if k.title == title]
 
             if len(audio) == 0:
                 if player.loop_queue is True:
                     player.loop_queue = False
                 player.pq.clear()
                 mes = await ctx.send('Going back in time...')
-                for track in db.session.query(db.Track).filter(db.Track.index >= index, db.Track.guild_id == database._guild.id):
+                for track in db.session.query(db.Track).filter(db.Track.index >= index, db.Track.guild_id == database.guild.id):
                     source = await YTDLSource.create_source(ctx, track.web_url, loop=self.bot.loop, download=True)
                     if source.title == title:
                         player.pq.additem(source, track.index)
@@ -393,7 +357,7 @@ class Music(commands.Cog):
                 player.loop_queue = True
             else:
                 database.sync_pq(ctx)
-                keys = [k for k,v in player.pq.items() if v < index]
+                keys = [k for k, v in player.pq.items() if v < index]
                 for key in keys:
                     del player.pq[key]
 
@@ -405,14 +369,6 @@ class Music(commands.Cog):
     @commands.command(name='shuffle', help='Randomizes all audios in the queue')
     async def shuffle_(self, ctx):
 
-        try:
-            channel = ctx.message.author.voice.channel
-        except:
-            return await ctx.send('You are not connected to any voice channel', delete_after=10)
-
-        voice_channel = ctx.voice_client
-
-        player = self.get_player(ctx)
         database = self.get_database(ctx)
 
         database.shuffle(ctx)
@@ -423,34 +379,24 @@ class Music(commands.Cog):
     @commands.command(name='loop_queue', help='Loops through the queue', aliases=['lp'])
     async def loop_queue_true(self, ctx):
 
-        try:
-            channel = ctx.message.author.voice.channel
-        except:
-            return await ctx.send('You are not connected to any voice channel', delete_after=10)
-
         player = self.get_player(ctx)
 
         if player.loop_queue is False:
             player.loop_queue = True
             return await ctx.send('The queue will loop when it ends')
-        else:
-            return await ctx.send('The queue is already looping')
+
+        return await ctx.send('The queue is already looping')
 
     @commands.command(name='loop_queue_stop', help='Stops the loop queue', aliases=['lqs'])
     async def stop_loop_queue_(self, ctx):
-
-        try:
-            channel = ctx.message.author.voice.channel
-        except:
-            return await ctx.send('You are not connected to any voice channel', delete_after=10)
 
         player = self.get_player(ctx)
 
         if player.loop_queue is True:
             player.loop_queue = False
             return await ctx.send('The queue is not going to loop anymore')
-        else:
-            return await ctx.send('The queue is already not looping')
+
+        return await ctx.send('The queue is already not looping')
 
     async def loop_queue_(self, ctx):
 
@@ -459,7 +405,7 @@ class Music(commands.Cog):
 
         database = self.get_database(ctx)
 
-        for track in db.session.query(db.Track).filter(db.Track.guild_id == database._guild.id):
+        for track in db.session.query(db.Track).filter(db.Track.guild_id == database.guild.id):
             source = await YTDLSource.create_source(ctx, track.web_url, loop=self.bot.loop, download=True)
             player.pq.additem(source, track.index)
 
@@ -469,7 +415,7 @@ class Music(commands.Cog):
     @commands.command(name='load_playlist', help='Loads a playlist with the specified name', aliases=['loadp'])
     async def load_playlist_(self, ctx, *, name: str):
 
-        playlist = db.Database.get_playlist_name(self, ctx, name)
+        playlist = db.Database.get_playlist_name(ctx, name)
 
         await ctx.trigger_typing()
         
@@ -484,7 +430,7 @@ class Music(commands.Cog):
         
         sp = Spotify()
         
-        search_result = sp.search_tracks(search, limit = 5)
+        search_result = sp.search_tracks(search, limit=5)
                 
         embed = discord.Embed(title=f'Results for the term: {search}', color=9442302)
         
@@ -492,13 +438,14 @@ class Music(commands.Cog):
         
         for i, t in enumerate(search_result):
             
-            time = str(datetime.timedelta(milliseconds = t['duration']))
+            time = str(datetime.timedelta(milliseconds=t['duration']))
             
             embed.add_field(name=f"{i+1} - {t['track_n']}",
                             value=f"Artist(s): {t['artists_n']} \n Duration: {time[2:7]} minutes",
                             inline=True)
         
-        await ctx.send(embed = embed)
-        
+        await ctx.send(embed=embed)
+
+
 def setup(bot):
     bot.add_cog(Music(bot))

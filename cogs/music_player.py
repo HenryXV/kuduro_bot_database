@@ -7,7 +7,8 @@ from discord import FFmpegPCMAudio
 from pqdict import pqdict
 from cogs.ytdlsource import YTDLSource
 
-class MusicPlayer():
+
+class MusicPlayer:
 
     __slots__ = ('bot', '_guild', '_channel', '_cog', 'pq', 'next_song', 'loop_queue', 'wait', 'value', 'source', 'current', 'np', 'volume')
 
@@ -67,7 +68,7 @@ class MusicPlayer():
             opus = ctypes.util.find_library('opus')
             discord.opus.load_opus(opus)
             if not discord.opus.is_loaded():
-                raise RunTimeError('Opus failed to load')
+                raise RuntimeError('Opus failed to load')
 
             self._guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next_song.set))
             if source.title == 'chill':

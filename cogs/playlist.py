@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 
 import asyncio
-import datetime
 import traceback
 import datetime
 import cogs.database as db
