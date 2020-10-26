@@ -37,7 +37,7 @@ class MusicPlayer():
             self.next_song.clear()
 
             try:
-                if len(self.pq) == 0 and self.wait == True:
+                if len(self.pq) == 0 and self.wait is True:
                     source = FFmpegPCMAudio('intro.webm')
                     source.title = 'chill'
                 elif len(self.pq) == 0:

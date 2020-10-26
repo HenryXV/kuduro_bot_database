@@ -80,9 +80,9 @@ class Music(commands.Cog):
 
             await asyncio.sleep(3)
 
-            if len(player.pq) == 0 and player.loop_queue == True:
+            if len(player.pq) == 0 and player.loop_queue is True:
                 await self.loop_queue_(ctx)
-            elif player.loop_queue == False: break
+            elif player.loop_queue is False: break
             else: continue
 
     @commands.command(name='join', help='Connects the bot to your current channel')
@@ -378,7 +378,7 @@ class Music(commands.Cog):
             audio = [k for k,v in player.pq.items() if k.title == title]
 
             if len(audio) == 0:
-                if player.loop_queue == True:
+                if player.loop_queue is True:
                     player.loop_queue = False
                 player.pq.clear()
                 mes = await ctx.send('Going back in time...')
@@ -430,7 +430,7 @@ class Music(commands.Cog):
 
         player = self.get_player(ctx)
 
-        if player.loop_queue == False:
+        if player.loop_queue is False:
             player.loop_queue = True
             return await ctx.send('The queue will loop when it ends')
         else:
@@ -446,7 +446,7 @@ class Music(commands.Cog):
 
         player = self.get_player(ctx)
 
-        if player.loop_queue == True:
+        if player.loop_queue is True:
             player.loop_queue = False
             return await ctx.send('The queue is not going to loop anymore')
         else:
