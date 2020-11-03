@@ -7,7 +7,7 @@ import traceback
 import datetime
 import urllib.request
 import re
-import youtube_dl
+import youtube_dlc
 import cogs.database as db
 from sqlalchemy.dialects.postgresql import insert
 from cogs.music_player import MusicPlayer
@@ -143,7 +143,7 @@ class Music(commands.Cog):
             # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
             try:
                 source = await YTDLSource.create_source(ctx, url, loop=self.bot.loop, download=True)
-            except youtube_dl.utils.DownloadError as e:
+            except youtube_dlc.utils.DownloadError as e:
                 if len(player.pq) == 0:
                     await Music.stop_(self, ctx)
                 

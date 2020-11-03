@@ -2,7 +2,7 @@ import discord
 
 import asyncio
 from functools import partial
-from youtube_dl import YoutubeDL
+from youtube_dlc import YoutubeDL
 
 
 ytdl_opts = {
@@ -29,6 +29,7 @@ ffmpegopts = {
 
 ytdl = YoutubeDL(ytdl_opts)
 
+
 class YTDLSource(discord.PCMVolumeTransformer):
 
     def __init__(self, source, *, data, requester):
@@ -38,9 +39,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.web_url = data.get('webpage_url')
         self.title = data.get('title')
         self.duration = data.get('duration')
-
-        # YTDL info dicts (data) have other useful information you might want
-        # https://github.com/rg3/youtube-dl/blob/master/README.md
 
     def __getitem__(self, item: str):
         # Allows us to access attributes similar to a dict.
