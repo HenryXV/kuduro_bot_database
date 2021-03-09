@@ -180,7 +180,7 @@ class Music(commands.Cog):
         player = self.get_player(ctx)
 
         voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
-        if voice.is_playing() and len(player.pq) > 0 and player.loop_queue is False:
+        if voice.is_playing() and len(player.pq) > 0:
             voice.stop()
             await ctx.message.add_reaction('⏭️')
         else:
@@ -424,14 +424,14 @@ class Music(commands.Cog):
             return await ctx.send('Any changes made to the queue will not affect your saved playlist', delete_after=30)
         except IndexError:
             return await ctx.send('There is no playlist with the name: {}'.format(name))
-    
+
     @commands.command(name='spotify')
     async def search_spotify_tracks_(self, ctx, *, search: str):
         
         sp = Spotify()
         
         search_result = sp.search_tracks(search, limit=5)
-                
+
         embed = discord.Embed(title=f'Results for the term: {search}', color=9442302)
         
         embed.set_author(name='Spotify Track Search')
@@ -443,7 +443,7 @@ class Music(commands.Cog):
             embed.add_field(name=f"{i+1} - {t['track_n']}",
                             value=f"Artist(s): {t['artists_n']} \n Duration: {time[2:7]} minutes",
                             inline=True)
-        
+
         await ctx.send(embed=embed)
 
 
