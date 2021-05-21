@@ -10,6 +10,8 @@ from sqlalchemy.orm import sessionmaker, relationship
 
 load_dotenv()
 URL = os.getenv('DATABASE_URL')
+if URL.startswith("postgres://"):
+    URL = URL.replace("postgres://", "postgresql://", 1)
 
 engine = create_engine(URL, echo=False)
 
